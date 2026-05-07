@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NMI Payments – Partner Pricing Analyzer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #32165D 0%, #1a0a3d 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lock-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(92,221,173,0.25);
+    border-radius: 20px;
+    padding: 52px 48px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    backdrop-filter: blur(12px);
+  }
+  .lock-icon {
+    width: 64px; height: 64px;
+    background: rgba(92,221,173,0.12);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 28px;
+  }
+  .eyebrow {
+    color: #5CDDAD;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .sub {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  label {
+    display: block;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+  }
+  .input-wrap { position: relative; margin-bottom: 16px; }
+  input[type="password"], input[type="text"] {
+    width: 100%;
+    padding: 14px 48px 14px 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  input:focus { border-color: #5CDDAD; }
+  .toggle-pw {
+    position: absolute; right: 14px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer; font-size: 16px; padding: 0;
+  }
+  .toggle-pw:hover { color: rgba(255,255,255,0.8); }
+  .btn {
+    width: 100%;
+    padding: 15px;
+    background: #5CDDAD;
+    color: #32165D;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    margin-top: 4px;
+  }
+  .btn:hover { background: #00D37D; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(92,221,173,0.35); }
+  .btn:active { transform: translateY(0); }
+  .error {
+    background: rgba(255,113,140,0.12);
+    border: 1px solid rgba(255,113,140,0.35);
+    color: #FF718C;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+    display: none;
+  }
+  .footer-note {
+    color: rgba(255,255,255,0.25);
+    font-size: 11px;
+    margin-top: 28px;
+  }
+  .spinner-wrap { display: none; padding: 8px 0; }
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid rgba(92,221,173,0.25);
+    border-top-color: #5CDDAD;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="lock-card">
+  <div class="lock-icon">&#128274;</div>
+  <div class="eyebrow">NMI Payments</div>
+  <h1>Partner Pricing<br>Analyzer</h1>
+  <p class="sub">This preview is password protected.<br>Enter the access password to continue.</p>
+  <label for="pw">Access Password</label>
+  <div class="input-wrap">
+    <input type="password" id="pw" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')unlock()" autofocus>
+    <button class="toggle-pw" onclick="togglePw()" type="button" title="Show password">&#128065;</button>
+  </div>
+  <button class="btn" id="unlockBtn" onclick="unlock()">Unlock Tool &rarr;</button>
+  <div class="spinner-wrap" id="spinnerWrap"><div class="spinner"></div></div>
+  <div class="error" id="err">Incorrect password. Please try again.</div>
+  <div class="footer-note">Internal use only &middot; NMI Payments &middot; Do not distribute</div>
+</div>
+
+<script>
+const PW_HASH = "1a8a98fd59494051b70b4b30dcf04225ea61d00ca71191f289536455d03006cf";
+
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function togglePw() {
+  const f = document.getElementById('pw');
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+
+function showError() {
+  document.getElementById('unlockBtn').style.display = 'block';
+  document.getElementById('spinnerWrap').style.display = 'none';
+  const err = document.getElementById('err');
+  err.style.display = 'block';
+  document.getElementById('pw').value = '';
+  document.getElementById('pw').focus();
+  setTimeout(() => { err.style.display = 'none'; }, 3000);
+}
+
+async function unlock() {
+  const pw = document.getElementById('pw').value.trim();
+  if (!pw) return;
+  document.getElementById('unlockBtn').style.display = 'none';
+  document.getElementById('spinnerWrap').style.display = 'block';
+  try {
+    const hash = await sha256hex(pw);
+    if (hash !== PW_HASH) { showError(); return; }
+    const resp = await fetch('tool.html');
+    if (!resp.ok) throw new Error('fetch failed');
+    const html = await resp.text();
+    document.open(); document.write(html); document.close();
+  } catch(e) {
+    showError();
+  }
+}
+</script>
+</body>
+</html>
