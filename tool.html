@@ -1,2 +1,989 @@
-<!-- This file contains the NMI Pricing Tool. It is fetched only after password verification. Access requires the password gate at index.html -->
-<!-- Note: Direct URL access is possible for technically savvy users. This gate is suitable for internal team review. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NMI Payments – Partner Pricing Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #32165D;
+  --purple-light: #4a2580;
+  --green: #5CDDAD;
+  --green-dark: #00D37D;
+  --white: #ffffff;
+  --gray-50: #f8f9fb;
+  --gray-100: #f0f1f5;
+  --gray-200: #e2e4ec;
+  --gray-400: #9da3b4;
+  --gray-600: #5a6072;
+  --gray-800: #2d3142;
+  --red: #FF718C;
+  --gold: #FDAD15;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow: 0 4px 24px rgba(50,22,93,0.10);
+  --shadow-lg: 0 8px 40px rgba(50,22,93,0.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Public Sans', Verdana, sans-serif; background: var(--gray-50); color: var(--gray-800); min-height: 100vh; }
+
+/* HEADER */
+header { background: var(--purple); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-text { color: var(--white); font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.logo-text span { color: var(--green); }
+.header-badge { background: rgba(92,221,173,0.15); border: 1px solid rgba(92,221,173,0.3); color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.partner-pill { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 100px; }
+
+/* STEP SYSTEM */
+.step { display: none; }
+.step.active { display: block; }
+
+/* ── STEP 1: HERO ── */
+.hero { background: linear-gradient(135deg, var(--purple) 0%, #1a0a3d 100%); min-height: calc(100vh - 64px); display: flex; align-items: center; justify-content: center; padding: 60px 40px; }
+.hero-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(92,221,173,0.2); border-radius: var(--radius-lg); padding: 56px; max-width: 560px; width: 100%; text-align: center; backdrop-filter: blur(10px); }
+.hero-eyebrow { color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+.hero-title { color: var(--white); font-size: 38px; font-weight: 800; line-height: 1.1; margin-bottom: 16px; letter-spacing: -1px; }
+.hero-sub { color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.6; margin-bottom: 40px; }
+.form-group { text-align: left; margin-bottom: 20px; }
+.form-group label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+.form-group input { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius); color: var(--white); font-family: 'Public Sans', Verdana, sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.form-group input::placeholder { color: rgba(255,255,255,0.3); }
+.form-group input:focus { border-color: var(--green); }
+
+/* ── STEP 2: CHOICE ── */
+.choice-screen { min-height: calc(100vh - 64px); display: flex; align-items: center; justify-content: center; padding: 60px 40px; background: var(--gray-50); }
+.choice-card { max-width: 700px; width: 100%; }
+.choice-title { font-size: 28px; font-weight: 800; color: var(--purple); letter-spacing: -0.8px; margin-bottom: 8px; }
+.choice-sub { color: var(--gray-600); font-size: 15px; margin-bottom: 36px; }
+.choice-options { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.choice-option { border: 2px solid var(--gray-200); border-radius: var(--radius-lg); padding: 32px 24px; cursor: pointer; transition: all 0.2s; text-align: center; background: white; }
+.choice-option:hover { border-color: var(--purple); box-shadow: var(--shadow); transform: translateY(-2px); }
+.choice-option.selected { border-color: var(--purple); background: rgba(50,22,93,0.03); }
+.choice-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; }
+.choice-icon.purple { background: rgba(50,22,93,0.08); }
+.choice-icon.green { background: rgba(92,221,173,0.15); }
+.choice-option h3 { font-size: 16px; font-weight: 800; color: var(--purple); margin-bottom: 8px; }
+.choice-option p { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+.choice-badge { display: inline-block; background: var(--green); color: var(--purple); font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; margin-bottom: 12px; }
+
+/* UPLOAD */
+.upload-area { border: 2px dashed var(--gray-200); border-radius: var(--radius-lg); padding: 40px 32px; text-align: center; cursor: pointer; transition: all 0.2s; background: white; margin-bottom: 16px; }
+.upload-area:hover, .upload-area.dragover { border-color: var(--purple); background: rgba(50,22,93,0.02); }
+.upload-area.has-file { border-color: var(--green-dark); border-style: solid; background: rgba(0,211,125,0.04); }
+.upload-area h3 { font-size: 15px; font-weight: 700; color: var(--purple); margin-bottom: 4px; margin-top: 8px; }
+.upload-area p { font-size: 12px; color: var(--gray-400); }
+input[type="file"] { display: none; }
+
+/* ── STEP 3: MAIN TOOL ── */
+.tool-layout { max-width: 1280px; margin: 0 auto; padding: 36px 40px; }
+.tool-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.tool-title { font-size: 26px; font-weight: 800; color: var(--purple); letter-spacing: -0.8px; }
+.tool-subtitle { color: var(--gray-600); font-size: 13px; margin-top: 4px; }
+
+/* EXTRACTED BANNER */
+.extracted-banner { background: linear-gradient(135deg, rgba(0,211,125,0.08), rgba(92,221,173,0.04)); border: 1px solid rgba(0,211,125,0.3); border-radius: var(--radius); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+.extracted-banner strong { color: var(--green-dark); font-size: 13px; font-weight: 800; display: block; }
+.extracted-banner span { color: var(--gray-600); font-size: 12px; }
+
+/* VOLUME SECTION */
+.section-card { background: white; border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow); }
+.section-card h3 { font-size: 15px; font-weight: 800; color: var(--purple); margin-bottom: 4px; }
+.section-card .section-desc { font-size: 12px; color: var(--gray-600); margin-bottom: 18px; }
+.vol-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gray-400); margin-bottom: 6px; display: block; }
+.field-input { position: relative; }
+.field-input .pfx { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--gray-400); pointer-events: none; }
+.field-input input { width: 100%; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 11px 12px; font-size: 14px; font-weight: 700; color: var(--gray-800); outline: none; font-family: 'Public Sans', Verdana, sans-serif; transition: border-color 0.2s; }
+.field-input input:focus { border-color: var(--purple); background: white; }
+.field-input.has-pfx input { padding-left: 26px; }
+
+/* CARD MIX */
+.card-mix-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+.card-brand-tile { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px; text-align: center; }
+.brand-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); margin-bottom: 8px; }
+.card-brand-tile input { width: 100%; border: none; background: transparent; text-align: center; font-size: 18px; font-weight: 800; color: var(--purple); padding: 0; outline: none; font-family: 'Public Sans', Verdana, sans-serif; }
+.card-brand-tile .int-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 6px; font-size: 11px; color: var(--gray-400); }
+.card-brand-tile .int-row input { width: 48px; font-size: 12px; font-weight: 700; color: var(--gray-600); border-bottom: 1px dashed var(--gray-300); border-radius: 0; text-align: center; padding: 0; }
+.pct-note { font-size: 11px; text-align: right; margin-top: 6px; color: var(--gray-400); }
+
+/* PARTNER SETTINGS - 6 COL */
+.settings-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
+.settings-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.setting-tile { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px; }
+.setting-tile.nmi-accent { border-color: rgba(50,22,93,0.2); background: rgba(50,22,93,0.02); }
+.setting-tile.comp-accent { border-color: rgba(92,221,173,0.2); background: rgba(92,221,173,0.03); }
+.setting-tile label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gray-400); display: block; margin-bottom: 6px; }
+.setting-tile input { width: 100%; border: 1px solid var(--gray-200); background: var(--gray-50); border-radius: 6px; padding: 9px 10px 9px 22px; font-size: 14px; font-weight: 700; color: var(--purple); outline: none; font-family: 'Public Sans', Verdana, sans-serif; transition: border-color 0.2s; }
+.setting-tile input:focus { border-color: var(--purple); background: white; }
+.setting-tile .note { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+.settings-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.settings-divider span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.settings-divider .nmi-tag { color: var(--purple); }
+.settings-divider .comp-tag { color: var(--green-dark); }
+.settings-divider hr { flex: 1; border: none; border-top: 1px solid var(--gray-200); }
+
+/* PRICING COLUMNS */
+.pricing-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.pricing-col { background: white; border-radius: var(--radius-lg); padding: 24px; border: 2px solid var(--gray-200); box-shadow: var(--shadow); }
+.pricing-col.nmi { border-color: var(--purple); }
+.pricing-col.comp { border-color: var(--green-dark); }
+.col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--gray-100); }
+.col-title { font-size: 15px; font-weight: 800; color: var(--purple); }
+.col-badge { font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; }
+.col-badge.nmi { background: var(--green); color: var(--purple); }
+.col-badge.comp { background: rgba(50,22,93,0.08); color: var(--purple); }
+.sec-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); margin-bottom: 10px; margin-top: 16px; }
+.sec-title:first-of-type { margin-top: 0; }
+.type-toggle { display: flex; background: var(--gray-100); border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+.type-btn { flex: 1; padding: 7px; background: transparent; border: none; border-radius: 6px; font-family: 'Public Sans', Verdana, sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--gray-600); transition: all 0.15s; }
+.type-btn.active { background: white; color: var(--purple); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.rate-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.rate-row label { font-size: 10px; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 4px; letter-spacing: 0; text-transform: none; }
+.rate-row .field-input input { padding: 9px 10px 9px 22px; font-size: 13px; }
+.divider { height: 1px; background: var(--gray-100); margin: 16px 0; }
+
+/* GATEWAY TOGGLE */
+.gw-toggle { display: flex; background: var(--gray-100); border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+.gw-btn { flex: 1; padding: 8px; background: transparent; border: none; border-radius: 6px; font-family: 'Public Sans', Verdana, sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--gray-600); transition: all 0.15s; text-align: center; }
+.gw-btn.active { background: white; color: var(--purple); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.gw-waived-note { font-size: 11px; color: var(--green-dark); font-weight: 700; padding: 8px 12px; background: rgba(0,211,125,0.06); border-radius: 8px; }
+.gw-base-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.gw-base-row label { font-size: 10px; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 4px; letter-spacing: 0; text-transform: none; }
+.gw-base-row .field-input input { padding: 8px 10px 8px 22px; font-size: 12px; }
+.addon-chips-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); margin-bottom: 8px; display: block; }
+.addon-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.addon-chip { padding: 5px 12px; border: 1.5px solid var(--gray-200); border-radius: 100px; font-size: 11px; font-weight: 700; color: var(--gray-600); cursor: pointer; background: white; font-family: 'Public Sans', Verdana, sans-serif; transition: all 0.15s; user-select: none; }
+.addon-chip:hover { border-color: var(--purple); color: var(--purple); }
+.addon-chip.active { background: var(--purple); color: white; border-color: var(--purple); }
+.addon-panels { display: flex; flex-direction: column; gap: 10px; }
+.addon-panel { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; overflow: hidden; animation: fadeUp 0.2s ease; }
+.addon-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(50,22,93,0.04); }
+.addon-panel-title { font-size: 11px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: 0.8px; }
+.addon-panel-body { padding: 12px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.addon-group { display: flex; flex-direction: column; gap: 8px; }
+.addon-group-head { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 8px; border-radius: 4px; margin-bottom: 2px; }
+.addon-group-head.buy { color: var(--gray-600); background: var(--gray-200); }
+.addon-group-head.markup { color: var(--purple); background: rgba(50,22,93,0.08); }
+.addon-field label { font-size: 10px; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 3px; }
+.addon-field .field-input input { padding: 7px 8px 7px 20px; font-size: 12px; font-weight: 600; }
+
+/* ANALYZE BUTTON */
+.analyze-btn { width: 100%; padding: 18px; background: var(--purple); color: white; border: none; border-radius: var(--radius); font-family: 'Public Sans', Verdana, sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 32px; }
+.analyze-btn:hover { background: #1e0c3a; transform: translateY(-1px); box-shadow: 0 8px 32px rgba(50,22,93,0.3); }
+
+/* ── STEP 4: RESULTS ── */
+.results-layout { max-width: 1280px; margin: 0 auto; padding: 36px 40px; }
+.results-hero { background: linear-gradient(135deg, var(--purple), #1e0c3a); border-radius: var(--radius-lg); padding: 36px 40px; margin-bottom: 32px; color: white; display: flex; align-items: center; justify-content: space-between; }
+.results-hero h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; margin-bottom: 6px; }
+.results-hero p { font-size: 13px; color: rgba(255,255,255,0.6); }
+.results-hero .summary-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.chip { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 100px; }
+
+/* BIG NUMBERS ROW */
+.big-numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.big-num-card { background: white; border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--gray-200); box-shadow: var(--shadow); text-align: center; position: relative; overflow: hidden; }
+.big-num-card.winner { border-color: var(--green-dark); }
+.big-num-card.winner::before { content: '★ ADVANTAGE'; position: absolute; top: 0; left: 0; right: 0; background: var(--green-dark); color: var(--purple); font-size: 9px; font-weight: 800; letter-spacing: 1.5px; padding: 5px; text-align: center; }
+.big-num-card.winner { padding-top: 34px; }
+.bn-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); margin-bottom: 8px; }
+.bn-value { font-size: 30px; font-weight: 800; color: var(--purple); letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+.bn-value.pos { color: var(--green-dark); }
+.bn-value.neg { color: var(--red); }
+.bn-sub { font-size: 11px; color: var(--gray-400); }
+
+/* SIDE BY SIDE COMPARISON */
+.side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.result-col { background: white; border-radius: var(--radius-lg); padding: 28px; border: 2px solid var(--gray-200); box-shadow: var(--shadow); }
+.result-col.nmi { border-color: var(--purple); }
+.result-col.comp { border-color: var(--gray-200); }
+.rc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--gray-100); }
+.rc-title { font-size: 16px; font-weight: 800; color: var(--purple); }
+.rc-badge { font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; }
+.rc-badge.nmi { background: var(--green); color: var(--purple); }
+.rc-badge.comp { background: var(--gray-100); color: var(--gray-600); }
+.rc-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--gray-100); }
+.rc-row:last-child { border-bottom: none; }
+.rc-row .lbl { font-size: 12px; color: var(--gray-600); font-weight: 500; }
+.rc-row .val { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+.rc-row.total { padding-top: 14px; margin-top: 6px; border-top: 2px solid var(--purple); border-bottom: none; }
+.rc-row.total .lbl { font-size: 13px; font-weight: 800; color: var(--purple); }
+.rc-row.total .val { font-size: 16px; font-weight: 800; color: var(--purple); }
+.rc-row.partner-net { background: rgba(50,22,93,0.04); border-radius: 8px; padding: 10px 12px; margin-top: 12px; }
+.rc-row.partner-net .lbl { font-size: 12px; font-weight: 800; color: var(--purple); }
+.rc-row.partner-net .val { font-size: 15px; font-weight: 800; color: var(--green-dark); }
+
+/* DETAILED TABLE */
+.detail-table { background: white; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--gray-200); box-shadow: var(--shadow); margin-bottom: 24px; }
+.dt-head { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; background: var(--purple); color: white; padding: 14px 24px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.dt-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; padding: 11px 24px; border-bottom: 1px solid var(--gray-100); font-size: 13px; transition: background 0.1s; }
+.dt-row:hover { background: var(--gray-50); }
+.dt-row:last-child { border-bottom: none; }
+.dt-row .lbl { color: var(--gray-600); font-weight: 500; }
+.dt-row .nv { color: var(--purple); font-weight: 700; }
+.dt-row .cv { color: var(--gray-600); font-weight: 600; }
+.dt-row .dv { font-weight: 800; }
+.dt-row .dv.pos { color: var(--green-dark); }
+.dt-row .dv.neg { color: var(--red); }
+.dt-section-head { grid-column: 1/-1; background: var(--gray-50); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); padding: 8px 24px; border-bottom: 1px solid var(--gray-200); }
+.dt-foot { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; padding: 16px 24px; background: rgba(50,22,93,0.04); border-top: 2px solid var(--purple); font-size: 14px; font-weight: 800; }
+.dt-foot .nv { color: var(--purple); }
+.dt-foot .cv { color: var(--gray-600); }
+.dt-foot .dv.pos { color: var(--green-dark); }
+.dt-foot .dv.neg { color: var(--red); }
+
+/* INSIGHT BOX */
+.insight-box { background: linear-gradient(135deg, var(--purple), #1e0c3a); border-radius: var(--radius-lg); padding: 28px 32px; color: white; margin-bottom: 24px; position: relative; overflow: hidden; }
+.insight-box::after { content: ''; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; background: rgba(92,221,173,0.08); border-radius: 50%; }
+.insight-box h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--green); margin-bottom: 10px; }
+.insight-box p { font-size: 16px; font-weight: 500; line-height: 1.6; position: relative; z-index: 1; }
+.insight-box .hl { color: var(--green); font-weight: 800; }
+
+/* SHARED BUTTONS */
+.btn-primary { width: 100%; padding: 16px; background: var(--green); color: var(--purple); border: none; border-radius: var(--radius); font-family: 'Public Sans', Verdana, sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+.btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(92,221,173,0.4); }
+.btn-outline { padding: 12px 28px; background: transparent; color: var(--purple); border: 2px solid var(--purple); border-radius: var(--radius); font-family: 'Public Sans', Verdana, sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.btn-outline:hover { background: var(--purple); color: white; }
+.btn-ghost { background: none; border: none; color: var(--gray-400); font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; font-family: 'Public Sans', Verdana, sans-serif; transition: color 0.2s; margin-bottom: 28px; }
+.btn-ghost:hover { color: var(--purple); }
+
+/* STEP DOTS */
+.step-dots { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; }
+.sdot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-200); transition: all 0.2s; }
+.sdot.done { background: var(--green-dark); }
+.sdot.active { background: var(--purple); width: 24px; border-radius: 4px; }
+
+/* LOADING */
+.loading-overlay { position: fixed; inset: 0; background: rgba(50,22,93,0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; backdrop-filter: blur(4px); }
+.loading-overlay.hidden { display: none; }
+.spinner { width: 48px; height: 48px; border: 3px solid rgba(92,221,173,0.2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-text { color: white; font-size: 16px; font-weight: 700; }
+.load-sub { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 6px; }
+
+/* ERROR */
+.err-msg { background: rgba(255,113,140,0.1); border: 1px solid rgba(255,113,140,0.3); color: var(--red); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 10px; display: none; }
+
+/* ANIMATION */
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
+.fadein { animation: fadeUp 0.35s ease; }
+
+@media(max-width:900px){
+  .vol-grid, .card-mix-grid, .big-numbers, .side-by-side, .pricing-columns, .settings-6, .settings-3 { grid-template-columns:1fr; }
+  .choice-options { grid-template-columns:1fr; }
+  .tool-layout, .results-layout { padding:24px 16px; }
+  .dt-head, .dt-row, .dt-foot { grid-template-columns: 1.5fr 1fr 1fr 0.8fr; font-size:11px; padding:10px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <path d="M4 24L12 8L20 20L24 14L28 24" stroke="#5CDDAD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">nmi <span>payments</span></span>
+  </div>
+  <div class="header-right">
+    <span class="partner-pill" id="headerPartnerPill" style="display:none;"></span>
+    <span class="header-badge">Partner Pricing Analyzer</span>
+  </div>
+</header>
+
+<!-- LOADING -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="load-text" id="loadText">Analyzing statement...</div>
+  <div class="load-sub" id="loadSub">Extracting rates and volume data</div>
+</div>
+
+<!-- ══════════════ STEP 1 ══════════════ -->
+<div class="step active" id="step1">
+  <div class="hero">
+    <div class="hero-card">
+      <div class="hero-eyebrow">NMI Payments</div>
+      <h1 class="hero-title">Partner Pricing<br>Analyzer</h1>
+      <p class="hero-sub">Compare NMI Payments against any competitor using real statement data or quick estimates — and show partners exactly what they'd earn.</p>
+      <div class="form-group">
+        <label>Partner Name</label>
+        <input type="text" id="partnerName" placeholder="e.g. Matthew Lundeberg" />
+      </div>
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" id="companyName" placeholder="e.g. Veloce Solutions" />
+      </div>
+      <button class="btn-primary" onclick="goToStep2()">Get Started →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ STEP 2 ══════════════ -->
+<div class="step" id="step2">
+  <div class="choice-screen">
+    <div class="choice-card">
+      <button class="btn-ghost" onclick="goToStep(1)">← Back</button>
+      <div class="step-dots">
+        <div class="sdot done"></div><div class="sdot active"></div><div class="sdot"></div><div class="sdot"></div>
+      </div>
+      <h2 class="choice-title">Do you have a processing statement?</h2>
+      <p class="choice-sub">Upload a statement for a precise analysis using real interchange rates and volume. Or use estimates to get started quickly.</p>
+      <div class="choice-options">
+        <div class="choice-option" id="optStatement" onclick="selectOption('statement')">
+          <span class="choice-badge">Most Accurate</span>
+          <div class="choice-icon purple">📄</div>
+          <h3>Upload Statement</h3>
+          <p>AI extracts your exact volume, transaction count, card brand mix, interchange rates, and CP/CNP split.</p>
+        </div>
+        <div class="choice-option" id="optEstimate" onclick="selectOption('estimate')">
+          <div class="choice-icon green">✏️</div>
+          <h3>Use Estimates</h3>
+          <p>No statement? Enter your approximate volume, transaction count, and average ticket to run a quick comparison.</p>
+        </div>
+      </div>
+
+      <div id="uploadSection" style="display:none;">
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('statementFile').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('dragover')">
+          <div style="font-size:32px;" id="uploadIcon">📁</div>
+          <h3 id="uploadTitle">Click to upload or drag & drop</h3>
+          <p id="uploadDesc">PDF processing statement — Visa, Mastercard, Discover, Amex</p>
+        </div>
+        <input type="file" id="statementFile" accept=".pdf" onchange="handleFileSelect(event)">
+        <div class="err-msg" id="uploadError"></div>
+      </div>
+
+      <button class="btn-primary" onclick="goToStep3()" style="margin-top:24px;">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ STEP 3: CONFIGURE ══════════════ -->
+<div class="step" id="step3">
+  <div class="tool-layout">
+    <button class="btn-ghost" onclick="goToStep(2)">← Back</button>
+    <div class="step-dots">
+      <div class="sdot done"></div><div class="sdot done"></div><div class="sdot active"></div><div class="sdot"></div>
+    </div>
+    <div class="tool-header">
+      <div>
+        <div class="tool-title">Configure Pricing</div>
+        <div class="tool-subtitle" id="toolSubtitle">Enter rates for both sides, then press Analyze</div>
+      </div>
+    </div>
+
+    <!-- EXTRACTED BANNER -->
+    <div class="extracted-banner" id="extractedBanner" style="display:none;">
+      <span style="font-size:18px;">✅</span>
+      <div>
+        <strong id="extractedTitle">Statement extracted successfully</strong>
+        <span id="extractedSummary"></span>
+      </div>
+    </div>
+
+    <!-- VOLUME DATA -->
+    <div class="section-card">
+      <h3>Volume & Transaction Data</h3>
+      <div class="section-desc">Monthly processing data — pulled from statement or entered manually.</div>
+      <div class="vol-grid">
+        <div>
+          <span class="field-label">Monthly Volume ($)</span>
+          <div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="monthlyVolume" placeholder="150,000"></div>
+        </div>
+        <div>
+          <span class="field-label">Transaction Count</span>
+          <div class="field-input"><input type="number" id="txnCount" placeholder="1,200"></div>
+        </div>
+        <div>
+          <span class="field-label">Avg Ticket ($)</span>
+          <div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="avgTicket" placeholder="125"></div>
+        </div>
+        <div>
+          <span class="field-label">Blended Interchange %</span>
+          <div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="blendedInt" placeholder="1.65" step="0.01"></div>
+        </div>
+      </div>
+
+      <!-- CARD MIX -->
+      <div style="margin-top:20px;">
+        <span class="field-label">Card Brand Mix & Effective Interchange Rate</span>
+        <div class="card-mix-grid">
+          <div class="card-brand-tile">
+            <div class="brand-name">Visa</div>
+            <input type="number" id="visaPct" placeholder="65" min="0" max="100" oninput="updatePctSum()">
+            <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">% of volume</div>
+            <div class="int-row">Int: <input type="number" id="visaInt" placeholder="1.60" step="0.01">%</div>
+            <div class="int-row">+$<input type="number" id="visaTxn" placeholder="0.00" step="0.01">/txn</div>
+          </div>
+          <div class="card-brand-tile">
+            <div class="brand-name">Mastercard</div>
+            <input type="number" id="mcPct" placeholder="25" min="0" max="100" oninput="updatePctSum()">
+            <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">% of volume</div>
+            <div class="int-row">Int: <input type="number" id="mcInt" placeholder="1.65" step="0.01">%</div>
+            <div class="int-row">+$<input type="number" id="mcTxn" placeholder="0.00" step="0.01">/txn</div>
+          </div>
+          <div class="card-brand-tile">
+            <div class="brand-name">Discover</div>
+            <input type="number" id="discPct" placeholder="7" min="0" max="100" oninput="updatePctSum()">
+            <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">% of volume</div>
+            <div class="int-row">Int: <input type="number" id="discInt" placeholder="1.70" step="0.01">%</div>
+            <div class="int-row">+$<input type="number" id="discTxn" placeholder="0.00" step="0.01">/txn</div>
+          </div>
+          <div class="card-brand-tile">
+            <div class="brand-name">Amex</div>
+            <input type="number" id="amexPct" placeholder="3" min="0" max="100" oninput="updatePctSum()">
+            <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">% of volume</div>
+            <div class="int-row">Int: <input type="number" id="amexInt" placeholder="2.30" step="0.01">%</div>
+            <div class="int-row">+$<input type="number" id="amexTxn" placeholder="0.00" step="0.01">/txn</div>
+          </div>
+        </div>
+        <div class="pct-note" id="pctNote"></div>
+      </div>
+    </div>
+
+    <!-- PARTNER SETTINGS -->
+    <div class="section-card">
+      <h3>Buy Rates & Revenue Share</h3>
+      <div class="section-desc">NMI partner buy rates are pre-filled. Enter competitor's equivalent costs.</div>
+      <div class="settings-divider" style="margin-top:16px;">
+        <span class="nmi-tag">NMI Payments — Your Cost</span><hr>
+      </div>
+      <div class="settings-3">
+        <div class="setting-tile nmi-accent">
+          <label>BIN Fee (% above interchange)</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);">%</span><input type="number" id="nmiBinFee" value="0.05" step="0.01"></div>
+          <div class="note">On sales volume</div>
+        </div>
+        <div class="setting-tile nmi-accent">
+          <label>Auth Fee ($ per transaction)</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);">$</span><input type="number" id="nmiAuthFee" value="0.05" step="0.01"></div>
+          <div class="note">Per authorization</div>
+        </div>
+        <div class="setting-tile nmi-accent">
+          <label>Revenue Share % to Partner</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);">%</span><input type="number" id="nmiRevShare" value="50" step="1" min="0" max="100"></div>
+          <div class="note">Partner's share of residuals</div>
+        </div>
+      </div>
+      <div class="settings-divider">
+        <span class="comp-tag">Competitor — Their Cost</span><hr>
+      </div>
+      <div class="settings-3">
+        <div class="setting-tile comp-accent">
+          <label>Comp BIN Fee (% above interchange)</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);">%</span><input type="number" id="compBinFee" value="0.05" step="0.01"></div>
+          <div class="note">On sales volume</div>
+        </div>
+        <div class="setting-tile comp-accent">
+          <label>Comp Auth Fee ($ per transaction)</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);">$</span><input type="number" id="compAuthFee" value="0.05" step="0.01"></div>
+          <div class="note">Per authorization</div>
+        </div>
+        <div class="setting-tile comp-accent">
+          <label>Comp Revenue Share % to Partner</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);">%</span><input type="number" id="compRevShare" value="50" step="1" min="0" max="100"></div>
+          <div class="note">0 if no residuals paid</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRICING COLUMNS -->
+    <div class="pricing-columns">
+      <!-- NMI COLUMN -->
+      <div class="pricing-col nmi">
+        <div class="col-header"><span class="col-title">NMI Payments</span><span class="col-badge nmi">Your Pricing</span></div>
+        <div class="sec-title">How will you price the merchant?</div>
+        <div class="type-toggle">
+          <button class="type-btn active" id="nmiFlatBtn" onclick="setPricingType('nmi','flat')">Flat Rate</button>
+          <button class="type-btn" id="nmiICBtn" onclick="setPricingType('nmi','ic')">IC+ Pricing</button>
+        </div>
+        <div id="nmiFlatFields">
+          <div class="sec-title">Card Present</div>
+          <div class="rate-row">
+            <div><label>Rate (%)</label><div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="nmiCPRate" value="2.50" step="0.01"></div></div>
+            <div><label>Per Txn ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmiCPFee" value="0.20" step="0.01"></div></div>
+          </div>
+          <div class="sec-title">Card Not Present</div>
+          <div class="rate-row">
+            <div><label>Rate (%)</label><div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="nmiCNPRate" value="3.29" step="0.01"></div></div>
+            <div><label>Per Txn ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmiCNPFee" value="0.20" step="0.01"></div></div>
+          </div>
+          <div class="sec-title">Card Present % of Volume</div>
+          <div id="nmiCPExtracted" style="display:none;font-size:11px;color:var(--green-dark);font-weight:700;margin-bottom:6px;">📄 Extracted from statement: <span id="nmiCPExtractedVal"></span>%</div>
+          <div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="nmiCPPct" value="60" min="0" max="100"></div>
+        </div>
+        <div id="nmiICFields" style="display:none;">
+          <div class="sec-title">Markup Above Interchange</div>
+          <div class="rate-row">
+            <div><label>Markup (%)</label><div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="nmiICRate" value="0.80" step="0.01"></div></div>
+            <div><label>Per Txn ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmiICFee" value="0.10" step="0.01"></div></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-title">Gateway & Add-On Fees</div>
+        <div class="gw-toggle">
+          <button class="gw-btn active" id="nmiGWNone" onclick="setGW('nmi','none')">No Gateway Fees</button>
+          <button class="gw-btn" id="nmiGWCustom" onclick="setGW('nmi','custom')">Customize Fees</button>
+        </div>
+        <div id="nmiGWNoneNote" class="gw-waived-note">✓ Gateway fees waived — NMI Payments bundle</div>
+        <div id="nmiGWFields" style="display:none;">
+          <div class="addon-panel" style="margin-bottom:10px;">
+            <div class="addon-panel-header"><span class="addon-panel-title">Base Gateway Fee</span></div>
+            <div class="addon-panel-body">
+              <div class="addon-group">
+                <div class="addon-group-head buy">Buy Rate (NMI cost to partner)</div>
+                <div class="addon-field"><label>Monthly ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmi_gwBaseBuyMonth" value="5.00" step="0.01" min="0"></div></div>
+                <div class="addon-field"><label>Per Transaction ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmi_gwBaseBuyTxn" value="0.05" step="0.01" min="0"></div></div>
+              </div>
+              <div class="addon-group">
+                <div class="addon-group-head markup">Markup to Merchant</div>
+                <div class="addon-field"><label>Monthly ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmi_gwMarkupMonth" value="5.00" step="0.01" min="0"></div></div>
+                <div class="addon-field"><label>Per Transaction ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="nmi_gwMarkupTxn" value="0.05" step="0.01" min="0"></div></div>
+              </div>
+            </div>
+          </div>
+          <span class="addon-chips-label">Add-On Services — click to include</span>
+          <div class="addon-chips" id="nmiAddonChips"></div>
+          <div class="addon-panels" id="nmiAddonPanels"></div>
+        </div>
+      </div>
+
+      <!-- COMPETITOR COLUMN -->
+      <div class="pricing-col comp">
+        <div class="col-header"><span class="col-title">Competitor</span><span class="col-badge comp">Their Pricing</span></div>
+        <div class="sec-title">How does the competitor price?</div>
+        <div class="type-toggle">
+          <button class="type-btn active" id="compFlatBtn" onclick="setPricingType('comp','flat')">Flat Rate</button>
+          <button class="type-btn" id="compICBtn" onclick="setPricingType('comp','ic')">IC+ Pricing</button>
+        </div>
+        <div id="compFlatFields">
+          <div class="sec-title">Card Present</div>
+          <div class="rate-row">
+            <div><label>Rate (%)</label><div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="compCPRate" value="2.50" step="0.01"></div></div>
+            <div><label>Per Txn ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="compCPFee" value="0.20" step="0.01"></div></div>
+          </div>
+          <div class="sec-title">Card Not Present</div>
+          <div class="rate-row">
+            <div><label>Rate (%)</label><div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="compCNPRate" value="3.29" step="0.01"></div></div>
+            <div><label>Per Txn ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="compCNPFee" value="0.20" step="0.01"></div></div>
+          </div>
+          <div class="sec-title">Card Present % of Volume</div>
+          <div id="compCPExtracted" style="display:none;font-size:11px;color:var(--green-dark);font-weight:700;margin-bottom:6px;">📄 Extracted from statement: <span id="compCPExtractedVal"></span>%</div>
+          <div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="compCPPct" value="60" min="0" max="100"></div>
+        </div>
+        <div id="compICFields" style="display:none;">
+          <div class="sec-title">Markup Above Interchange</div>
+          <div class="rate-row">
+            <div><label>Markup (%)</label><div class="field-input has-pfx"><span class="pfx">%</span><input type="number" id="compICRate" value="0.80" step="0.01"></div></div>
+            <div><label>Per Txn ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="compICFee" value="0.10" step="0.01"></div></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-title">Gateway & Add-On Fees</div>
+        <div class="gw-toggle">
+          <button class="gw-btn active" id="compGWNone" onclick="setGW('comp','none')">No Gateway Fees</button>
+          <button class="gw-btn" id="compGWCustom" onclick="setGW('comp','custom')">Customize Fees</button>
+        </div>
+        <div id="compGWNoneNote" class="gw-waived-note" style="background:rgba(50,22,93,0.04);color:var(--gray-600);">No additional gateway fees entered</div>
+        <div id="compGWFields" style="display:none;">
+          <div class="addon-panel" style="margin-bottom:10px;">
+            <div class="addon-panel-header"><span class="addon-panel-title">Base Gateway Fee</span></div>
+            <div class="addon-panel-body">
+              <div class="addon-group">
+                <div class="addon-group-head buy">Competitor Buy Rate (their cost to partner)</div>
+                <div class="addon-field"><label>Monthly ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="comp_gwBaseBuyMonth" value="5.00" step="0.01" min="0"></div></div>
+                <div class="addon-field"><label>Per Transaction ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="comp_gwBaseBuyTxn" value="0.05" step="0.01" min="0"></div></div>
+              </div>
+              <div class="addon-group">
+                <div class="addon-group-head markup">Markup to Merchant</div>
+                <div class="addon-field"><label>Monthly ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="comp_gwMarkupMonth" value="5.00" step="0.01" min="0"></div></div>
+                <div class="addon-field"><label>Per Transaction ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="comp_gwMarkupTxn" value="0.05" step="0.01" min="0"></div></div>
+              </div>
+            </div>
+          </div>
+          <span class="addon-chips-label">Add-On Services — click to include</span>
+          <div class="addon-chips" id="compAddonChips"></div>
+          <div class="addon-panels" id="compAddonPanels"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="err-msg" id="calcError"></div>
+    <button class="analyze-btn" onclick="runAnalysis()">⚡ Analyze Pricing Comparison →</button>
+  </div>
+</div>
+
+<!-- ══════════════ STEP 4: RESULTS ══════════════ -->
+<div class="step" id="step4">
+  <div class="results-layout fadein">
+    <button class="btn-ghost" onclick="goToStep(3)">← Adjust & Recalculate</button>
+    <div class="results-hero">
+      <div>
+        <h2 id="resultsTitle">Pricing Analysis</h2>
+        <p id="resultsSubtitle">Monthly comparison</p>
+        <div class="summary-chips" id="summaryChips"></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Partner Net Advantage</div>
+        <div style="font-size:42px;font-weight:800;color:var(--green);letter-spacing:-1px;" id="heroAdvantage">—</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);">per month with NMI Payments</div>
+      </div>
+    </div>
+    <div class="big-numbers">
+      <div class="big-num-card"><div class="bn-label">Merchant Cost — NMI</div><div class="bn-value" id="bnMerchNMI">—</div><div class="bn-sub">per month to merchant</div></div>
+      <div class="big-num-card"><div class="bn-label">Merchant Cost — Competitor</div><div class="bn-value" id="bnMerchComp">—</div><div class="bn-sub">per month to merchant</div></div>
+      <div class="big-num-card winner"><div class="bn-label">Merchant Savings w/ NMI</div><div class="bn-value pos" id="bnMerchSave">—</div><div class="bn-sub">less per month for merchant</div></div>
+    </div>
+    <div class="side-by-side">
+      <div class="result-col nmi" id="nmiResultCol"></div>
+      <div class="result-col comp" id="compResultCol"></div>
+    </div>
+    <div class="detail-table">
+      <div class="dt-head"><div>Fee Component</div><div>NMI Payments</div><div>Competitor</div><div>Difference</div></div>
+      <div id="dtBody"></div>
+      <div class="dt-foot" id="dtFoot"></div>
+    </div>
+    <div class="insight-box"><h3>💡 Key Insight</h3><p id="insightText">—</p></div>
+    <div style="display:flex;gap:12px;">
+      <button class="btn-outline" onclick="goToStep(3)" style="flex:1;">← Adjust Pricing</button>
+      <button class="btn-outline" onclick="goToStep(1)" style="flex:1;">Start New Analysis</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selOption = null;
+let uploadedFile = null;
+let nmiGWMode  = 'none';
+let compGWMode = 'none';
+const activeAddons = { nmi: new Set(), comp: new Set() };
+
+const ADDONS = [
+  { id:'vault', label:'Customer Vault',      txnLabel:'Per Record',       nmiDefs:{ buyMonth:5.00, buyTxn:0.05 } },
+  { id:'acu',   label:'Auto Card Updater',   txnLabel:'Per Update',       nmiDefs:{ buyMonth:5.00, buyTxn:0.20 } },
+  { id:'ttp',   label:'Text to Pay',         txnLabel:'Per Conversation', nmiDefs:{ buyMonth:5.00, buyTxn:0.18 } },
+  { id:'qb',    label:'QuickBooks',          txnLabel:null,               nmiDefs:{ buyMonth:0.00, buyTxn:0    } },
+  { id:'fraud', label:'Fraud Prevention',    txnLabel:'Per Transaction',  nmiDefs:{ buyMonth:5.00, buyTxn:0.05 } },
+  { id:'l3',    label:'Level III Data',      txnLabel:'Per Transaction',  nmiDefs:{ buyMonth:25.00,buyTxn:0.25 } },
+];
+
+function buildAddonUI(side) {
+  document.getElementById(side+'AddonChips').innerHTML = ADDONS.map(a =>
+    `<button class="addon-chip" id="${side}_chip_${a.id}" onclick="toggleAddon('${side}','${a.id}')">${a.label}</button>`
+  ).join('');
+}
+function toggleAddon(side, addonId) {
+  const set = activeAddons[side];
+  const chip = document.getElementById(`${side}_chip_${addonId}`);
+  if (set.has(addonId)) { set.delete(addonId); chip.classList.remove('active'); }
+  else                  { set.add(addonId);    chip.classList.add('active');    }
+  renderAddonPanels(side);
+}
+function renderAddonPanels(side) {
+  const isNMI = side === 'nmi';
+  const buyLabel = isNMI ? 'Buy Rate (NMI cost to partner)' : 'Competitor Buy Rate (their cost to partner)';
+  let html = '';
+  ADDONS.forEach(a => {
+    if (!activeAddons[side].has(a.id)) return;
+    const hasTxn = a.txnLabel !== null;
+    const defBuyMonth = isNMI ? a.nmiDefs.buyMonth : 0;
+    const defBuyTxn   = isNMI ? a.nmiDefs.buyTxn   : 0;
+    const txnRowBuy    = hasTxn ? `<div class="addon-field"><label>${a.txnLabel} ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="${side}_${a.id}_buyTxn" value="${defBuyTxn}" step="0.01" min="0"></div></div>` : '';
+    const txnRowMarkup = hasTxn ? `<div class="addon-field"><label>${a.txnLabel} ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="${side}_${a.id}_markupTxn" value="${defBuyTxn}" step="0.01" min="0"></div></div>` : '';
+    html += `<div class="addon-panel"><div class="addon-panel-header"><span class="addon-panel-title">${a.label}</span><button onclick="toggleAddon('${side}','${a.id}')" style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:16px;line-height:1;font-weight:700;padding:0;">✕</button></div><div class="addon-panel-body"><div class="addon-group"><div class="addon-group-head buy">${buyLabel}</div><div class="addon-field"><label>Monthly ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="${side}_${a.id}_buyMonth" value="${defBuyMonth}" step="0.01" min="0"></div></div>${txnRowBuy}</div><div class="addon-group"><div class="addon-group-head markup">Markup to Merchant</div><div class="addon-field"><label>Monthly ($)</label><div class="field-input has-pfx"><span class="pfx">$</span><input type="number" id="${side}_${a.id}_markupMonth" value="${defBuyMonth}" step="0.01" min="0"></div></div>${txnRowMarkup}</div></div></div>`;
+  });
+  document.getElementById(side+'AddonPanels').innerHTML = html;
+}
+buildAddonUI('nmi');
+buildAddonUI('comp');
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goToStep2() {
+  const name = document.getElementById('partnerName').value.trim();
+  const company = document.getElementById('companyName').value.trim();
+  if (!name && !company) { alert('Please enter a name or company.'); return; }
+  const label = company ? (name ? name+' · '+company : company) : name;
+  document.getElementById('headerPartnerPill').textContent = label;
+  document.getElementById('headerPartnerPill').style.display = '';
+  document.getElementById('toolSubtitle').textContent = 'Analysis for '+label;
+  goToStep(2);
+}
+function goToStep3() {
+  if (!selOption) { alert('Please select an option.'); return; }
+  if (selOption==='statement' && !uploadedFile) { showErr('uploadError','Please upload your processing statement.'); return; }
+  goToStep(3);
+  if (selOption==='statement' && uploadedFile) processStatement();
+}
+function selectOption(opt) {
+  selOption = opt;
+  document.getElementById('optStatement').classList.toggle('selected', opt==='statement');
+  document.getElementById('optEstimate').classList.toggle('selected',  opt==='estimate');
+  document.getElementById('uploadSection').style.display = opt==='statement' ? 'block' : 'none';
+  hideErr('uploadError');
+}
+function handleFileSelect(e) { if (e.target.files[0]) setFile(e.target.files[0]); }
+function handleDragOver(e)   { e.preventDefault(); document.getElementById('uploadArea').classList.add('dragover'); }
+function handleDrop(e) {
+  e.preventDefault(); document.getElementById('uploadArea').classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f?.type==='application/pdf') setFile(f); else showErr('uploadError','Please upload a PDF file.');
+}
+function setFile(f) {
+  uploadedFile = f;
+  document.getElementById('uploadArea').classList.add('has-file');
+  document.getElementById('uploadIcon').textContent = '✅';
+  document.getElementById('uploadTitle').textContent = f.name;
+  document.getElementById('uploadDesc').textContent = (f.size/1024).toFixed(0)+' KB — Ready to analyze';
+  hideErr('uploadError');
+}
+function setPricingType(side, type) {
+  document.getElementById(side+'FlatBtn').classList.toggle('active', type==='flat');
+  document.getElementById(side+'ICBtn').classList.toggle('active',   type==='ic');
+  document.getElementById(side+'FlatFields').style.display = type==='flat' ? 'block' : 'none';
+  document.getElementById(side+'ICFields').style.display   = type==='ic'   ? 'block' : 'none';
+}
+function setGW(side, mode) {
+  if (side==='nmi') nmiGWMode=mode; else compGWMode=mode;
+  document.getElementById(side+'GWNone').classList.toggle('active',   mode==='none');
+  document.getElementById(side+'GWCustom').classList.toggle('active', mode==='custom');
+  document.getElementById(side+'GWNoneNote').style.display = mode==='none'   ? 'block' : 'none';
+  document.getElementById(side+'GWFields').style.display   = mode==='custom' ? 'block' : 'none';
+}
+function updatePctSum() {
+  const sum = ['visa','mc','disc','amex'].reduce((t,b)=>t+(+v(b+'Pct')||0),0);
+  const note = document.getElementById('pctNote');
+  if (Math.abs(sum-100)>0.5) { note.style.color='var(--red)'; note.textContent=`Card mix totals ${sum.toFixed(0)}% — should equal 100%`; }
+  else { note.style.color='var(--green-dark)'; note.textContent='✓ Card mix totals 100%'; }
+}
+function v(id){const el=document.getElementById(id);return el?el.value:'';}
+function n(id){return parseFloat(v(id))||0;}
+function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display='block';}}
+function hideErr(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function showLoading(t,s){document.getElementById('loadingOverlay').classList.remove('hidden');document.getElementById('loadText').textContent=t;document.getElementById('loadSub').textContent=s;}
+function hideLoading(){document.getElementById('loadingOverlay').classList.add('hidden');}
+function fmt(n){return'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtD(n){return(n>=0?'+':'-')+'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});}
+
+async function processStatement() {
+  showLoading('Analyzing your processing statement...','Extracting interchange rates, volume, and card mix');
+  try {
+    const b64 = await fileToBase64(uploadedFile);
+    const apiKey = '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';
+    const headers = {'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`};
+    const prompt = `You are a payments industry expert analyzing a merchant processing statement. Extract the data below and return ONLY valid JSON with no markdown, no backticks, no explanation.
+
+STEP-BY-STEP EXTRACTION INSTRUCTIONS:
+
+1. MONTHLY VOLUME: Find total net sales volume for the period.
+2. TRANSACTION COUNT & AVG TICKET: Total transaction count; avg ticket = volume / count.
+3. BLENDED INTERCHANGE RATE:
+   - Find the "Interchange Fees" or "Interchange / American Express Program Fees" section.
+   - Sum ALL dollar amounts in that section (these are the interchange costs).
+   - Divide by total volume. That is the blendedInterchangePct.
+   - DO NOT include Authorization Fees, Transaction Fees, Card Brand Fees, or Other Fees.
+4. PER-BRAND INTERCHANGE RATE (interchangePct):
+   - Use ONLY the line items inside the "INTERCHANGE FEES" section.
+   - For each brand, sum ONLY the dollar totals of lines that belong to that brand within that section.
+   - Divide that sum by the brand's volume from the Plan Summary.
+   - STRICTLY EXCLUDE: Authorization Fees, Transaction Fees, Card Brand Fees, Other Fees sections.
+5. PER-BRAND TRANSACTION FEE (txnFee in $/txn):
+   - Look for per-transaction fees in the Transaction Fees or Authorization Fees section.
+   - If auth fees are listed per-brand, use those per brand. If one blended auth fee covers multiple brands, apply that same per-txn rate to ALL brands it covers.
+6. CARD MIX (% of volume per brand): Use the Plan Summary table.
+7. CARD PRESENT %: Find all interchange line items where the category name contains "DB" or "PPD". Return their volumes in cpVolumes array. Set cardPresentPct to null.
+
+Return this exact JSON:
+{
+  "monthlyVolume": <number>,
+  "transactionCount": <integer>,
+  "avgTicket": <number>,
+  "blendedInterchangePct": <number>,
+  "cardPresentPct": null,
+  "cardMix": {
+    "visa":       { "pct": <number>, "interchangePct": <number>, "txnFee": <number or null> },
+    "mastercard": { "pct": <number>, "interchangePct": <number>, "txnFee": <number or null> },
+    "discover":   { "pct": <number>, "interchangePct": <number>, "txnFee": <number or null> },
+    "amex":       { "pct": <number>, "interchangePct": <number>, "txnFee": <number or null> }
+  },
+  "confidence": "high|medium|low",
+  "notes": "<brief note>",
+  "cpVolumes": [<list of dollar volumes for all DB and PPD interchange line items>],
+  "totalVolume": <total monthly sales volume>
+}`;
+    const resp = await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST', headers,
+      body: JSON.stringify({
+        model:'gpt-4o',
+        max_tokens:1200,
+        messages:[{
+          role:'user',
+          content:[{type:'text',text:prompt},{type:'image_url',image_url:{url:`data:application/pdf;base64,${b64}`,detail:'high'}}]
+        }]
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message||'API error');
+    let raw = data.choices[0].message.content.trim();
+    raw = raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    const ex = JSON.parse(raw);
+    if (ex.cpVolumes && ex.cpVolumes.length>0 && ex.totalVolume) {
+      const cpVol = ex.cpVolumes.reduce((a,b)=>a+b,0);
+      ex.cardPresentPct = Math.min(100, Math.round((cpVol/ex.totalVolume)*100));
+    } else if (ex.cardPresentPct===null) {
+      ex.cardPresentPct = 60;
+    }
+    applyExtracted(ex);
+    hideLoading();
+  } catch(e) {
+    hideLoading();
+    showErr('calcError','Statement processing failed: '+e.message+'. Please enter values manually.');
+  }
+}
+
+function applyExtracted(ex) {
+  if (ex.monthlyVolume) document.getElementById('monthlyVolume').value = ex.monthlyVolume;
+  if (ex.transactionCount) document.getElementById('txnCount').value = ex.transactionCount;
+  if (ex.avgTicket) document.getElementById('avgTicket').value = ex.avgTicket.toFixed(2);
+  if (ex.blendedInterchangePct) document.getElementById('blendedInt').value = ex.blendedInterchangePct.toFixed(2);
+  const cm = ex.cardMix||{};
+  ['visa','mc','disc','amex'].forEach(b=>{
+    const key = b==='mc'?'mastercard':b==='disc'?'discover':b;
+    const bd = cm[key]||{};
+    if(bd.pct!=null) document.getElementById(b+'Pct').value=bd.pct.toFixed(1);
+    if(bd.interchangePct!=null){document.getElementById(b+'Int').value=bd.interchangePct.toFixed(2);}
+    if(bd.txnFee!=null) document.getElementById(b+'Txn').value=bd.txnFee.toFixed(2);
+  });
+  if (ex.cardPresentPct!=null) {
+    document.getElementById('nmiCPPct').value=ex.cardPresentPct;
+    document.getElementById('compCPPct').value=ex.cardPresentPct;
+    document.getElementById('nmiCPExtracted').style.display='block';
+    document.getElementById('nmiCPExtractedVal').textContent=ex.cardPresentPct;
+    document.getElementById('compCPExtracted').style.display='block';
+    document.getElementById('compCPExtractedVal').textContent=ex.cardPresentPct;
+  }
+  updatePctSum();
+  const vol = ex.monthlyVolume||0, txn = ex.transactionCount||0;
+  document.getElementById('extractedBanner').style.display='flex';
+  document.getElementById('extractedTitle').textContent=`Statement extracted — ${ex.confidence||'medium'} confidence`;
+  document.getElementById('extractedSummary').textContent=`$${vol.toLocaleString()} volume · ${txn.toLocaleString()} txns · ${ex.blendedInterchangePct?.toFixed(2)||'?'}% blended interchange`;
+}
+
+function calcSide(side, vol, txns, cpPct) {
+  const isFlat = document.getElementById(side+'FlatBtn').classList.contains('active');
+  const cpVol = vol*(cpPct/100), cnpVol = vol*(1-cpPct/100);
+  let processing = 0;
+  if (isFlat) {
+    const cpRate=n(side+'CPRate'), cpFee=n(side+'CPFee'), cnpRate=n(side+'CNPRate'), cnpFee=n(side+'CNPFee');
+    const cpTxns = txns*(cpPct/100), cnpTxns = txns*(1-cpPct/100);
+    processing = cpVol*(cpRate/100)+cpTxns*cpFee + cnpVol*(cnpRate/100)+cnpTxns*cnpFee;
+  } else {
+    const icRate=n(side+'ICRate'), icFee=n(side+'ICFee');
+    const blended=n('blendedInt');
+    processing = vol*((blended+icRate)/100)+txns*icFee;
+  }
+  const gwMode = side==='nmi'?nmiGWMode:compGWMode;
+  let gwBuy=0, gwMarkup=0;
+  if (gwMode==='custom') {
+    gwBuy    = n(side+'_gwBaseBuyMonth') + n(side+'_gwBaseBuyTxn')*txns;
+    gwMarkup = n(side+'_gwMarkupMonth') + n(side+'_gwMarkupTxn')*txns;
+  }
+  let addonBuy=0, addonMarkup=0;
+  ADDONS.forEach(a=>{
+    if (!activeAddons[side].has(a.id)) return;
+    addonBuy    += n(`${side}_${a.id}_buyMonth`);
+    addonMarkup += n(`${side}_${a.id}_markupMonth`);
+    if (a.txnLabel) { addonBuy += n(`${side}_${a.id}_buyTxn`)*txns; addonMarkup += n(`${side}_${a.id}_markupTxn`)*txns; }
+  });
+  const binFee  = n(side==='nmi'?'nmiBinFee':'compBinFee');
+  const authFee = n(side==='nmi'?'nmiAuthFee':'compAuthFee');
+  const revShare = n(side==='nmi'?'nmiRevShare':'compRevShare')/100;
+  const buyCosts    = vol*(binFee/100) + txns*authFee + gwBuy    + addonBuy;
+  const merchantRev = processing + gwMarkup + addonMarkup;
+  const gross       = merchantRev - buyCosts;
+  const partnerNet  = gross * revShare;
+  return { processing, gwMarkup, addonMarkup, merchantRev, buyCosts, gross, partnerNet, gwBuy, addonBuy, binCost: vol*(binFee/100), authCost: txns*authFee };
+}
+
+function runAnalysis() {
+  hideErr('calcError');
+  const vol  = n('monthlyVolume');
+  const txns = n('txnCount');
+  if (!vol||!txns) { showErr('calcError','Please enter monthly volume and transaction count.'); return; }
+  const nmiCPPct  = n('nmiCPPct')/100;
+  const compCPPct = n('compCPPct')/100;
+  const nmi  = calcSide('nmi',  vol, txns, nmiCPPct);
+  const comp = calcSide('comp', vol, txns, compCPPct);
+  renderResults(nmi, comp, vol, txns);
+  goToStep(4);
+}
+
+function renderResults(nmi, comp, vol, txns) {
+  const partnerName = v('partnerName')||'Partner';
+  const company     = v('companyName')||'';
+  const label = company?(partnerName?partnerName+' · '+company:company):partnerName;
+  document.getElementById('resultsTitle').textContent = label+' — Pricing Analysis';
+  document.getElementById('resultsSubtitle').textContent = `$${vol.toLocaleString()} monthly volume · ${txns.toLocaleString()} transactions`;
+  const chips = document.getElementById('summaryChips');
+  chips.innerHTML = `<span class="chip">$${vol.toLocaleString()} volume</span><span class="chip">${txns.toLocaleString()} txns</span><span class="chip">$${(vol/txns).toFixed(2)} avg ticket</span>`;
+  document.getElementById('bnMerchNMI').textContent  = fmt(nmi.merchantRev);
+  document.getElementById('bnMerchComp').textContent = fmt(comp.merchantRev);
+  const save = comp.merchantRev - nmi.merchantRev;
+  document.getElementById('bnMerchSave').textContent = fmt(save);
+  document.getElementById('bnMerchSave').className = 'bn-value '+(save>=0?'pos':'neg');
+  const adv = nmi.partnerNet - comp.partnerNet;
+  document.getElementById('heroAdvantage').textContent = (adv>=0?'+':'')+fmt(adv).replace('$',''+(adv>=0?'$':'-$')).replace('--$','-$').replace('+-$','-$');
+  document.getElementById('heroAdvantage').textContent = (adv>=0?'+$':'-$')+Math.abs(adv).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  function colHTML(d, side) {
+    const cls = side==='nmi'?'nmi':'comp';
+    const badge = side==='nmi'?'<span class="rc-badge nmi">NMI Payments</span>':'<span class="rc-badge comp">Competitor</span>';
+    return `<div class="rc-header"><span class="rc-title">${side==='nmi'?'NMI Payments':'Competitor'}</span>${badge}</div>
+      <div class="rc-row"><span class="lbl">Processing Revenue</span><span class="val">${fmt(d.processing)}</span></div>
+      <div class="rc-row"><span class="lbl">Gateway Markup</span><span class="val">${fmt(d.gwMarkup)}</span></div>
+      <div class="rc-row"><span class="lbl">Add-On Markup</span><span class="val">${fmt(d.addonMarkup)}</span></div>
+      <div class="rc-row total"><span class="lbl">Total Merchant Revenue</span><span class="val">${fmt(d.merchantRev)}</span></div>
+      <div class="rc-row"><span class="lbl">BIN / Network Costs</span><span class="val">-${fmt(d.binCost)}</span></div>
+      <div class="rc-row"><span class="lbl">Auth Fees</span><span class="val">-${fmt(d.authCost)}</span></div>
+      <div class="rc-row"><span class="lbl">Gateway Buy Rate</span><span class="val">-${fmt(d.gwBuy)}</span></div>
+      <div class="rc-row"><span class="lbl">Add-On Buy Rate</span><span class="val">-${fmt(d.addonBuy)}</span></div>
+      <div class="rc-row total"><span class="lbl">Gross Residual</span><span class="val">${fmt(d.gross)}</span></div>
+      <div class="rc-row partner-net"><span class="lbl">Partner Net (Rev Share)</span><span class="val">${fmt(d.partnerNet)}</span></div>`;
+  }
+  document.getElementById('nmiResultCol').innerHTML = colHTML(nmi,'nmi');
+  document.getElementById('compResultCol').innerHTML = colHTML(comp,'comp');
+  const rows = [
+    ['Processing Revenue', nmi.processing, comp.processing],
+    ['Gateway Markup',     nmi.gwMarkup,   comp.gwMarkup],
+    ['Add-On Markup',      nmi.addonMarkup,comp.addonMarkup],
+  ];
+  let dtHtml = `<div class="dt-row dt-section-head">Revenue</div>`;
+  rows.forEach(([l,nv,cv])=>{
+    const d=nv-cv;
+    dtHtml+=`<div class="dt-row"><div class="lbl">${l}</div><div class="nv">${fmt(nv)}</div><div class="cv">${fmt(cv)}</div><div class="dv ${d>=0?'pos':'neg'}">${fmtD(d)}</div></div>`;
+  });
+  const costRows = [
+    ['BIN / Network Costs', nmi.binCost,   comp.binCost],
+    ['Auth Fees',            nmi.authCost,  comp.authCost],
+    ['Gateway Buy Rate',     nmi.gwBuy,     comp.gwBuy],
+    ['Add-On Buy Rate',      nmi.addonBuy,  comp.addonBuy],
+  ];
+  dtHtml += `<div class="dt-row dt-section-head">Costs (to Partner)</div>`;
+  costRows.forEach(([l,nv,cv])=>{
+    const d=cv-nv;
+    dtHtml+=`<div class="dt-row"><div class="lbl">${l}</div><div class="nv">${fmt(nv)}</div><div class="cv">${fmt(cv)}</div><div class="dv ${d>=0?'pos':'neg'}">${fmtD(d)}</div></div>`;
+  });
+  document.getElementById('dtBody').innerHTML=dtHtml;
+  const totalD = nmi.partnerNet-comp.partnerNet;
+  document.getElementById('dtFoot').innerHTML=`<div>Partner Net Income</div><div class="nv">${fmt(nmi.partnerNet)}</div><div class="cv">${fmt(comp.partnerNet)}</div><div class="dv ${totalD>=0?'pos':'neg'}">${fmtD(totalD)}</div>`;
+  const annualAdv = Math.abs(adv)*12;
+  document.getElementById('insightText').innerHTML=`With NMI Payments, <span class="hl">${partnerName}</span> would earn <span class="hl">${(adv>=0?'+':'')}${fmt(adv)}/month</span> compared to the competitor — that's <span class="hl">${fmt(annualAdv)}/year</span> in ${adv>=0?'additional':'reduced'} partner income. The merchant saves <span class="hl">${fmt(Math.abs(save))}/month</span> on processing costs.`;
+}
+</script>
+</body>
+</html>
